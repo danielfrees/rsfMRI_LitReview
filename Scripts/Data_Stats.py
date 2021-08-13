@@ -1,6 +1,10 @@
 
 import pandas as pd
 
+import numpy as np #for holding data in as numpy arrays in sampleDist function
+import seaborn as sns #for sampleDist function
+from matplotlib import pyplot as plt #for sampleDist function
+
 #Contains runStats(), queryStats(), easyQueryStats(), printStats()
 
 #List of classifications (used in a couple funcs)
@@ -770,3 +774,33 @@ def printStats(stats, weight = "UW"):
     display(df_smn)    
     print("------------------------------\n------------------------------\n------------------------------")
 #--end printStats function-----------------------------------------------------------
+
+
+#sampleDist function
+#produces a distribution of TBI and Total Sample Sizes on a per-paper basis (each paper gets one entry), using a cleaned spreadsheet output
+def sampleDist(datalist):
+    papers_already_counted = []
+    TBI_sample_sizes = []
+    Total_sample_sizes = []
+    for i in range(len(datalist)):
+        for index, row in datalist[i].iterrows():
+            if not row['WITHIN NETWORK FINDINGS'].isspace() and not row['WITHIN NETWORK FINDINGS'] == "" \
+            and not row['WITHIN NETWORK FINDINGS'] in papers_already_counted:
+                papers_already_counted.append(row['WITHIN NETWORK FINDINGS'])
+                TBI_sample_sizes.append(int(row['TBI (n)']))
+                total_sample_size = int(row['TBI (n)']) + int(row['HC (n)'])
+                Total_sample_sizes.append(total_sample_size)
+    
+    print('Found ' + str(len(TBI_sample_sizes)) + " TBI sample sizes reported in the given data.")
+    print('Found ' + str(len(Total_sample_sizes)) + " Total sample sizes reported in the given data.")
+    
+    
+    
+    plt.rcParams["figure.figsize"] = [10.00, 5.00]
+    plt.rcParams["figure.autolayout"] = True
+    fig, axes = plt.subplots(1, 2)
+    
+    sns.histplot(np.array(TBI_sample_sizes), bins = 20, kde = True, ax=axes[0]).set(title = 'TBI Sample Size Distribution')
+    sns.histplot(np.array(Total_sample_sizes), bins = 20, kde = True, ax=axes[1]).set(title = 'Total Sample Size Distribution')
+    plt.show()
+#end sampleDist function----------------------------------------------------------------------------------------------------
