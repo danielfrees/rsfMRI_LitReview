@@ -802,5 +802,7 @@ def sampleDist(datalist):
     
     sns.histplot(np.array(TBI_sample_sizes), bins = 20, kde = True, ax=axes[0]).set(title = 'TBI Sample Size Distribution')
     sns.histplot(np.array(Total_sample_sizes), bins = 20, kde = True, ax=axes[1]).set(title = 'Total Sample Size Distribution')
+    axes[0].set_xlabel('TBI Group Size (n)')
+    axes[1].set_xlabel('Total Sample Size (n)')
     plt.show()
 #end sampleDist function----------------------------------------------------------------------------------------------------
