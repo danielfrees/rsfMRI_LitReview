@@ -53,7 +53,7 @@ def cleanData(datalist):
             #NOTE: First occurence is counted, because that was how we reported our main findings (always came first). Sometimes the other key words will appear describing a finding which 
             #did not survive due to ANCOVA etc. 
             
-            #strip all leading and ending whitespace for the columns to be cleaned (important so that I can check for empty cases vs. error cases)
+            #strip all leading and ending whitespace for the columns to be cleaned (important so that I can check for empty cases vs. error cases). Could've also used isspace() instead but this was better
             row['RESULT'].strip()
             row['TBI Class'].strip()
             row['Severity'].strip()
@@ -219,6 +219,57 @@ def cleanData(datalist):
 ##end cleanData function ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
+#smallTable function ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- 
+#this function takes in cleaned dataframes (some output from cleanData), and returns dataframes which #contain only info salient to the actual paper (purpose: for inclusion in certain journals in which
+#the paper may be published)
+
+def smallTable(datalist):
     
+    smallTableList = []
+    papers = []
+    paper_chron = []
+    drop_indices = []
+    
+    for i in range(len(datalist)):
+        smallTableList.append( datalist[i].filter(["WITHIN NETWORK FINDINGS", 'TBI Class', 'Severity', 'Age', 'Chronicity', 'Control Type'], axis = 1) )
+    
+    smallTable =  pd.concat(smallTableList)
+    
+    smallTable.reset_index(drop = True, inplace = True)
+    
+    #first pass: fill papers
+    for index, row, in smallTable.iterrows():
+        #fill papers downward, need to add all necessary chronicity info which is found by paper
+        if row['WITHIN NETWORK FINDINGS'] == "" and index -1 >= 0:
+            smallTable.at[index, 'WITHIN NETWORK FINDINGS'] = smallTable.at[index-1, 'WITHIN NETWORK FINDINGS']
+
+#second pass: gather all chron info
+    for index, row, in smallTable.iterrows():
+        
+        #add chronicity information in rows where a paper is reported again, then schedule to delete 
+        #this redundant paper row
+        if row['WITHIN NETWORK FINDINGS'] in papers: 
+            for pchron in paper_chron:
+                if row['WITHIN NETWORK FINDINGS'] == pchron[0] and not row['Chronicity'] in pchron[1]:
+                    pchron[1] += (' + ' + row['Chronicity'])
+            drop_indices.append(index)
+        #if encountering a new paper, add to the tracker lists
+        else: 
+            papers.append(row['WITHIN NETWORK FINDINGS'])
+            paper_chron.append([row['WITHIN NETWORK FINDINGS'], row['Chronicity']])
+            
+    
+    smallTable.drop(drop_indices, inplace = True)
+    smallTable.reset_index(drop = True, inplace = True)
+    
+    #third pass: update the chronicities now that the entire table has been searched and all chronicity info has been added for a given paper
+    for index, row, in smallTable.iterrows():
+        for pchron in paper_chron:
+            if row['WITHIN NETWORK FINDINGS'] == pchron[0]:
+                row['Chronicity'] = pchron[1]
 
 
+    return smallTable
+
+
+##end smallTable function ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
