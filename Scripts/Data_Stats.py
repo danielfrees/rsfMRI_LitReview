@@ -791,10 +791,10 @@ def sampleDist(datalist):
                 total_sample_size = int(row['TBI (n)']) + int(row['HC (n)'])
                 Total_sample_sizes.append(total_sample_size)
     
-    print('Found ' + str(len(TBI_sample_sizes)) + " TBI sample sizes reported in the given data.")
-    print('Found ' + str(len(Total_sample_sizes)) + " Total sample sizes reported in the given data.")
-    
-    
+    print('Found ' + str(len(TBI_sample_sizes)) + " TBI sample sizes reported in the given data:")
+    print(str(TBI_sample_sizes) + '\n')
+    print('Found ' + str(len(Total_sample_sizes)) + " Total sample sizes reported in the given data:")
+    print(str(Total_sample_sizes) + '\n')
     
     plt.rcParams["figure.figsize"] = [10.00, 5.00]
     plt.rcParams["figure.autolayout"] = True
@@ -805,4 +805,6 @@ def sampleDist(datalist):
     axes[0].set_xlabel('TBI Group Size (n)')
     axes[1].set_xlabel('Total Sample Size (n)')
     plt.show()
+    
+    return [TBI_sample_sizes, Total_sample_sizes]
 #end sampleDist function----------------------------------------------------------------------------------------------------
