@@ -1,6 +1,6 @@
 
-import pandas as pd
-import re
+import pandas as pd  #used throughout
+import re  #for numAuthors function, to match author names
 
 import numpy as np #for holding data in as numpy arrays in sampleDist function
 import seaborn as sns #for sampleDist function
