@@ -1,5 +1,6 @@
 
 import pandas as pd
+import re
 
 import numpy as np #for holding data in as numpy arrays in sampleDist function
 import seaborn as sns #for sampleDist function
@@ -808,3 +809,34 @@ def sampleDist(datalist):
     
     return [TBI_sample_sizes, Total_sample_sizes]
 #end sampleDist function----------------------------------------------------------------------------------------------------
+
+
+#numAuthors function---------------------------------------------------------------------------------
+#prints the number of unique authors in a dataframe
+#requires that author names are followed by either a 1, 2, (, or #
+def numAuthors(data):
+    
+    authorList = []
+    
+    for index, row in data.iterrows():
+        #get only the other name portion
+        
+        alpha_only = re.compile('[A-zÀ-ú\s]*')
+        author = alpha_only.match( row['WITHIN NETWORK FINDINGS'] )
+        
+        #strip whitespace off of ends, only allowed within author names (ie: van der Horn)
+        authorOnly = author.group(0).strip()
+        
+        #search for author and add if not found already
+        if authorOnly in authorList:
+            continue
+        else:
+            authorList.append(authorOnly)
+        
+    authorList.sort(key = str.lower)
+    print("There were " + str(len(authorList)) + " many unique author names in the dataframe passed.")
+    print("Authors found: " + '\n' + str(authorList))
+    
+    return
+#end numAuthors function------------------------------------------------------------------------------------
+
