@@ -273,3 +273,14 @@ def smallTable(datalist):
 
 
 ##end smallTable function ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+
+def militaryOnly(datalist):
+    for i in range(len(datalist)):
+        drop_indices = []
+        for index, row in datalist[i].iterrows():
+            if not row['TBI Class'] == 'military':
+                drop_indices.append(index)
+                
+        datalist[i].drop(drop_indices, inplace = True)
+    
+    return datalist
