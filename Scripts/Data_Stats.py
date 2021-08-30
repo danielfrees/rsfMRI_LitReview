@@ -28,13 +28,27 @@ controls = ["HC", "ISC", "NCC", "TBI+", "Mood", "Other Control"]
 #and could be altered for an alternate classification system.
 #Also note: errors should already be checked! they can be allowed to 
 #remain if desired for missing info on severity, age, chronicity. Other rows must be figured out. Data is required.
-def runStats(datalist, stats, dataOrder):
+def runStats(datalist, stats, dataOrder, quartiles):
     for i in range(len(datalist)):
         for index, row in datalist[i].iterrows():
+            quartile_score = 0
+            
+            #determine population size quartile (based on total sample size)
+            if ( int(row['TBI (n)']) + int(row['HC (n)']) ) < quartiles[0]:
+                quartile_score = 1
+            elif ( int(row['TBI (n)']) + int(row['HC (n)']) ) >= quartiles[0] \
+                and ( int(row['TBI (n)']) + int(row['HC (n)']) ) < quartiles[1]:
+                quartile_score = 2
+            elif ( int(row['TBI (n)']) + int(row['HC (n)']) ) >= quartiles[1] \
+                and ( int(row['TBI (n)']) + int(row['HC (n)']) ) < quartiles[2]:
+                quartile_score = 3
+            if ( int(row['TBI (n)']) + int(row['HC (n)']) ) >= quartiles[2]:
+                quartile_score = 4
+            
+            #determine classification
             classif = ""
             classif += dataOrder[i]
-            classif += "_" + row['RESULT']
-            
+            classif += "_" + row['RESULT']            
             
             if row['Severity'] == "//ERROR//":
                 classif += "_" + "No Severity"
@@ -54,13 +68,15 @@ def runStats(datalist, stats, dataOrder):
             classif += "_" + row['TBI Class']
             classif += "_" + row['Control Type']
             
+            #update UW, TBI weighted, total weighted, and quartile scored counts (in that order) 
             for stat in stats:
                 if stat[0] == classif:
                     stat[1] += 1
                     if row['TBI (n)'] != "//ERROR//":
                         stat[2] += int(row['TBI (n)'])
                     if row['TBI (n)'] != "//ERROR//" and row['HC (n)'] != "//ERROR//":
-                        stat[3] += ( int(row['TBI (n)']) + int(row['HC (n)']) )           
+                        stat[3] += ( int(row['TBI (n)']) + int(row['HC (n)']) )  
+                    stat[4] += quartile_score
 
 
 #end runStats() function----------------------------------------------------------------------------------------------------------------------------
@@ -72,6 +88,11 @@ def runStats(datalist, stats, dataOrder):
 #queryStats(stats, weight = "UW", query1="", query2="", query3="", query4="", query5="", query6=""): queryStats() allows you to input a stats 2D list 
 #(presumably resulting from runStats), as well as 0 to 6 queries (a query is a string matching a possible type of result such as "dmn" for 
 #default mode network results, etc.) and outputs a list of [increase decrease null] results, in that order. This function is integral to printStats.
+#As of 08/11/2021, you also have to provide a weighting type for your results as the second parameter.
+#"UW"- unweighted results
+#"W-TBI" TBI sample size weighted results
+#"W-Total" Total sample size weighted results
+#"Quartiles" Weighted by a simple scoring of sample size quartiles
 def queryStats(stats, weight = "UW", query1="", query2="", query3="", query4="", query5="", query6=""):
     count_inc = 0
     count_dec = 0
@@ -85,6 +106,8 @@ def queryStats(stats, weight = "UW", query1="", query2="", query3="", query4="",
                     count_inc += stat[2]
                 elif weight == "W-Total":
                     count_inc += stat[3]
+                elif weight == "Quartiles":
+                    count_inc += stat[4]
         if "dec" in stat[0] and query1 in stat[0] and query2 in stat[0] and query3 in stat[0] \
             and query4 in stat[0] and query5 in stat[0] and query6 in stat[0]:
                 if weight == "UW":
@@ -93,6 +116,8 @@ def queryStats(stats, weight = "UW", query1="", query2="", query3="", query4="",
                     count_dec += stat[2]
                 elif weight == "W-Total":
                     count_dec += stat[3]
+                elif weight == "Quartiles":
+                    count_dec += stat[4]    
         if "null" in stat[0] and query1 in stat[0] and query2 in stat[0] and query3 in stat[0] \
             and query4 in stat[0] and query5 in stat[0] and query6 in stat[0]:
                 if weight == "UW":
@@ -101,6 +126,8 @@ def queryStats(stats, weight = "UW", query1="", query2="", query3="", query4="",
                     count_null += stat[2]
                 elif weight == "W-Total":
                     count_null += stat[3]
+                elif weight == "Quartiles":
+                    count_null += stat[4]
     return [count_inc, count_dec, count_null]
 #end queryStats() function----------------------------------------------------------------------------------------------------------------------------
 
@@ -113,6 +140,7 @@ def queryStats(stats, weight = "UW", query1="", query2="", query3="", query4="",
 #"UW"- unweighted results
 #"W-TBI" TBI sample size weighted results
 #"W-Total" Total sample size weighted results
+#"Quartiles" Weighted by a simple scoring of sample size quartiles
 
 def easyQueryStats(stats, weight = "UW", query1="", query2="", query3="", query4="", query5="", query6=""):
     queryList = [query1, query2, query3, query4, query5, query6]
@@ -121,7 +149,7 @@ def easyQueryStats(stats, weight = "UW", query1="", query2="", query3="", query4
         print("One of more of your queries did not correspond to a valid keyword. Double check your input!")
         return
     
-    if weight not in ["UW", "W-TBI", "W-Total"]:
+    if weight not in ["UW", "W-TBI", "W-Total", "Quartiles"]:
         print("Your providing weighting choice did not match a valid keyword. Double check your input!")
         return
     

@@ -46,7 +46,9 @@ otherList =  ["other", "Other", "Orthopedic", "orthopedic", "military", "Militar
 #and miscapitalizations are allowed, but I did not write a full Trie or other spellchecker, so try to avoid typos as much as possible. 
 #I made sure through multiple iterations that this was catching all of our most common mispellings/ miscaps.
 def cleanData(datalist):
-            
+    for i in range(len(datalist)):
+        datalist[i] = datalist[i].fillna('')
+    
     for i in range(len(datalist)):
         for index, row in datalist[i].iterrows():
             #CLEAN RESULTS SECTION
