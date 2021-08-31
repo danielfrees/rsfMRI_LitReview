@@ -2,7 +2,7 @@
 import pandas as pd  #used throughout
 import re  #for numAuthors function, to match author names
 
-import numpy as np #for holding data in as numpy arrays in sampleDist function
+import numpy as np #for holding data in as numpy arrays in sampleDist function, and for checking nan in resultsByAge func
 import seaborn as sns #for sampleDist function
 from matplotlib import pyplot as plt #for sampleDist function
 
@@ -807,10 +807,21 @@ def printStats(stats, weight = "UW"):
 
 #sampleDist function
 #produces a distribution of TBI and Total Sample Sizes on a per-paper basis (each paper gets one entry), using a cleaned spreadsheet output
-def sampleDist(datalist):
+#also displays age distribution
+def sampleDist(datalist, agesFrame):
     papers_already_counted = []
     TBI_sample_sizes = []
     Total_sample_sizes = []
+    ages = []
+    
+    for index, row in agesFrame.iterrows():
+        if np.isnan(row['AGE']):
+            continue
+        else:
+            ages.append(int(row['AGE']))
+    
+    
+    #find sample sizes once for each paper
     for i in range(len(datalist)):
         for index, row in datalist[i].iterrows():
             if not row['WITHIN NETWORK FINDINGS'].isspace() and not row['WITHIN NETWORK FINDINGS'] == "" \
@@ -824,18 +835,46 @@ def sampleDist(datalist):
     print(str(TBI_sample_sizes) + '\n')
     print('Found ' + str(len(Total_sample_sizes)) + " Total sample sizes reported in the given data:")
     print(str(Total_sample_sizes) + '\n')
+    print('Found ' + str(len(ages)) + " average age statistics reported in the given data:")
+    print(str(ages) + '\n')
     
     plt.rcParams["figure.figsize"] = [10.00, 5.00]
     plt.rcParams["figure.autolayout"] = True
-    fig, axes = plt.subplots(1, 2)
+    fig, axes = plt.subplots(1, 3)
     
     sns.histplot(np.array(TBI_sample_sizes), bins = 20, kde = True, ax=axes[0]).set(title = 'TBI Sample Size Distribution')
     sns.histplot(np.array(Total_sample_sizes), bins = 20, kde = True, ax=axes[1]).set(title = 'Total Sample Size Distribution')
+    sns.histplot(np.array(ages), bins = 20, kde = True, ax=axes[2]).set(title = 'Average Age Distribution')
     axes[0].set_xlabel('TBI Group Size (n)')
     axes[1].set_xlabel('Total Sample Size (n)')
+    axes[2].set_xlabel('Average/Median Age (yrs)')
     plt.show()
     
-    return [TBI_sample_sizes, Total_sample_sizes]
+    #OUTPUTS FOR QUARTILES
+    #Calculate quartiles for scoring cutoffs
+
+    #TBI
+    print('TBI percentiles:')
+    print(np.percentile(TBI_sample_sizes, 25))
+    print(np.percentile(TBI_sample_sizes, 50))
+    print(np.percentile(TBI_sample_sizes, 75))
+    print('\n')
+
+    #Total
+    print('Total percentiles:')
+    print(np.percentile(Total_sample_sizes, 25))
+    print(np.percentile(Total_sample_sizes, 50))
+    print(np.percentile(Total_sample_sizes, 75))
+    print('\n')
+
+    #calculate age quartiles
+    print('Age Quartiles:')
+    print(np.percentile(ages, 25))
+    print(np.percentile(ages, 50))
+    print(np.percentile(ages, 75))
+    print('\n')
+          
+    return [TBI_sample_sizes, Total_sample_sizes, ages]
 #end sampleDist function----------------------------------------------------------------------------------------------------
 
 
@@ -868,3 +907,74 @@ def numAuthors(data):
     return
 #end numAuthors function------------------------------------------------------------------------------------
 
+#investigate results across average age
+def resultsByAge(datalist, ageFrame, age_quartiles):
+    
+    #combine all data into one table
+    singleTableList = []
+    for i in range(len(datalist)):
+        singleTableList.append( datalist[i].filter(["WITHIN NETWORK FINDINGS", 'RESULT'], axis = 1) )
+    
+    singleTable = pd.concat(singleTableList)
+    singleTable.reset_index(drop = True, inplace = True)
+    singleTable['AGE'] = ""
+    
+    #make a tuple list of all papers and ages from the ageFrame
+    age_papers = []
+    
+    for index, row in ageFrame.iterrows():
+        if row['AGE'] == "n/a":
+            continue
+        else:
+            age_papers.append((row['WITHIN NETWORK FINDINGS'], row['AGE']))
+    
+    #fill age info in for each paper in the concatenated table
+    #and generate list of tuples of results and ages
+    
+    results_ages = []
+    
+    for index, row in singleTable.iterrows():
+        #fill papers downwar
+        if row['WITHIN NETWORK FINDINGS'] == "" and index -1 >= 0:
+            singleTable.at[index, 'WITHIN NETWORK FINDINGS'] = singleTable.at[index-1, 'WITHIN NETWORK FINDINGS']
+            
+        for paper, age in age_papers:
+            if row['WITHIN NETWORK FINDINGS'] == paper:
+                singleTable.at[index, 'AGE'] = age
+                
+        if not np.isnan(row['AGE']):
+            results_ages.append((row['RESULT'], int(row['AGE'])))
+    
+    #used for double checking outputs
+    #display(singleTable)
+    #print(results_ages)    
+    
+    age_stats = [[1, 0, 0, 0], [2, 0, 0, 0], [3, 0, 0, 0], [4, 0, 0 , 0]]
+    #now generate a count of increases, decreases, and nulls by age quartile
+    for result, age in results_ages:
+        quartile_score = 0
+        if age < age_quartiles[0]:
+            quartile_score = 1
+        elif age >= age_quartiles[0] and age < age_quartiles[1]:
+            quartile_score = 2
+        elif age >= age_quartiles[1] and age < age_quartiles[2]:
+            quartile_score = 3
+        elif age > age_quartiles[2]:
+            quartile_score = 4
+        
+        for ageStat in age_stats:
+            if ageStat[0] == quartile_score:
+                if result == 'inc':
+                    ageStat[1] += 1
+                if result == 'dec':
+                    ageStat[2] += 1
+                if result == 'null':
+                    ageStat[3] += 1
+    
+    age_totals = {'Increase': [ageStat[1] for ageStat in age_stats], 
+                'Decrease': [ageStat[2] for ageStat in age_stats], 
+                'Null': [ageStat[3] for ageStat in age_stats]}        
+    df_totals = pd.DataFrame(age_totals, index = ['First Quartile Average Age', 'Second Quartile Average Age', 'Third Quartile Average Age', 'Fourth Quartile Average Age', ])
+    
+    return df_totals
+        
