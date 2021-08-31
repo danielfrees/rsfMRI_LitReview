@@ -818,7 +818,7 @@ def sampleDist(datalist, agesFrame):
         if np.isnan(row['AGE']):
             continue
         else:
-            ages.append(int(row['AGE']))
+            ages.append(float(row['AGE']))
     
     
     #find sample sizes once for each paper
@@ -908,7 +908,7 @@ def numAuthors(data):
 #end numAuthors function------------------------------------------------------------------------------------
 
 #investigate results across average age
-def resultsByAge(datalist, ageFrame, age_quartiles):
+def resultsByAge(datalist, ageFrame, age_quartiles, age_percentiles):
     
     #combine all data into one table
     singleTableList = []
@@ -943,15 +943,18 @@ def resultsByAge(datalist, ageFrame, age_quartiles):
                 singleTable.at[index, 'AGE'] = age
                 
         if not np.isnan(row['AGE']):
-            results_ages.append((row['RESULT'], int(row['AGE'])))
+            results_ages.append((row['RESULT'], float(row['AGE'])))
     
     #used for double checking outputs
     #display(singleTable)
     #print(results_ages)    
     
     age_stats = [[1, 0, 0, 0], [2, 0, 0, 0], [3, 0, 0, 0], [4, 0, 0 , 0]]
+    age_pstats = [[1, 0, 0, 0], [2, 0, 0, 0], [3, 0, 0, 0], [4, 0, 0 , 0], [5, 0, 0, 0], [6, 0, 0, 0], [7, 0, 0, 0], [8, 0, 0 , 0], [9, 0, 0, 0], [10, 0, 0, 0]]
+    
     #now generate a count of increases, decreases, and nulls by age quartile
     for result, age in results_ages:
+        #determine quartile score
         quartile_score = 0
         if age < age_quartiles[0]:
             quartile_score = 1
@@ -959,9 +962,33 @@ def resultsByAge(datalist, ageFrame, age_quartiles):
             quartile_score = 2
         elif age >= age_quartiles[1] and age < age_quartiles[2]:
             quartile_score = 3
-        elif age > age_quartiles[2]:
+        elif age >= age_quartiles[2]:
             quartile_score = 4
+            
+        #determine percentile score
+        percentile_score = 0
+        if age < age_percentiles[0]:
+            percentile_score = 1
+        elif age >= age_percentiles[0] and age < age_percentiles[1]:
+            percentile_score = 2
+        elif age >= age_percentiles[1] and age < age_percentiles[2]:
+            percentile_score = 3
+        elif age >= age_percentiles[2] and age < age_percentiles[3]:
+            percentile_score = 4
+        elif age >= age_percentiles[3] and age < age_percentiles[4]:
+            percentile_score = 5
+        elif age >= age_percentiles[4] and age < age_percentiles[5]:
+            percentile_score = 6
+        elif age >= age_percentiles[5] and age < age_percentiles[6]:
+            percentile_score = 7
+        elif age >= age_percentiles[6] and age < age_percentiles[7]:
+            percentile_score = 8
+        elif age >= age_percentiles[7] and age < age_percentiles[8]:
+            percentile_score = 9
+        elif age >= age_percentiles[8]:
+            percentile_score = 10
         
+        #count up quartile stats
         for ageStat in age_stats:
             if ageStat[0] == quartile_score:
                 if result == 'inc':
@@ -970,11 +997,31 @@ def resultsByAge(datalist, ageFrame, age_quartiles):
                     ageStat[2] += 1
                 if result == 'null':
                     ageStat[3] += 1
+                    
+        #count up percentile stats
+        for agePStat in age_pstats:
+            if agePStat[0] == percentile_score:
+                if result == 'inc':
+                    agePStat[1] += 1
+                if result == 'dec':
+                    agePStat[2] += 1
+                if result == 'null':
+                    agePStat[3] += 1
     
+    #dataframe of quartile stats
     age_totals = {'Increase': [ageStat[1] for ageStat in age_stats], 
                 'Decrease': [ageStat[2] for ageStat in age_stats], 
                 'Null': [ageStat[3] for ageStat in age_stats]}        
-    df_totals = pd.DataFrame(age_totals, index = ['First Quartile Average Age', 'Second Quartile Average Age', 'Third Quartile Average Age', 'Fourth Quartile Average Age', ])
+    df_totals = pd.DataFrame(age_totals, index = ['TBI Age: 1st Quartile', 'TBI Age: 2nd Quartile', 'TBI Age: 3rd Quartile', 'TBI Age: 4th Quartile'])
+    
+    #dataframe of percentile stats
+    age_ptotals = {'Increase': [agePStat[1] for agePStat in age_pstats], 
+                'Decrease': [agePStat[2] for agePStat in age_pstats], 
+                'Null': [agePStat[3] for agePStat in age_pstats]}        
+    df_ptotals = pd.DataFrame(age_ptotals, index = [('TBI Age: Decile ' + str(agePStat[0])) for agePStat in age_pstats])
+    
+    #display percentile stats
+    display(df_ptotals)
     
     return df_totals
         
