@@ -907,7 +907,7 @@ def numAuthors(data):
     return
 #end numAuthors function------------------------------------------------------------------------------------
 
-#investigate results across average age
+#investigate results by age
 def resultsByAge(datalist, ageFrame, age_quartiles, age_percentiles):
     
     #combine all data into one table
@@ -917,33 +917,36 @@ def resultsByAge(datalist, ageFrame, age_quartiles, age_percentiles):
     
     singleTable = pd.concat(singleTableList)
     singleTable.reset_index(drop = True, inplace = True)
-    singleTable['AGE'] = ""
+    singleTable['AGE'] = np.nan
     
     #make a tuple list of all papers and ages from the ageFrame
     age_papers = []
     
     for index, row in ageFrame.iterrows():
+        ageFrame.at[index, 'WITHIN NETWORK FINDINGS'] = row['WITHIN NETWORK FINDINGS'].strip()
         if row['AGE'] == "n/a":
             continue
         else:
-            age_papers.append((row['WITHIN NETWORK FINDINGS'], row['AGE']))
-    
+            age_papers.append((ageFrame.at[index, 'WITHIN NETWORK FINDINGS'], row['AGE']))
+
     #fill age info in for each paper in the concatenated table
     #and generate list of tuples of results and ages
     
     results_ages = []
     
     for index, row in singleTable.iterrows():
-        #fill papers downwar
+        singleTable.at[index, 'WITHIN NETWORK FINDINGS'] = row['WITHIN NETWORK FINDINGS'].strip()
+        
+        #fill paper names downward
         if row['WITHIN NETWORK FINDINGS'] == "" and index -1 >= 0:
             singleTable.at[index, 'WITHIN NETWORK FINDINGS'] = singleTable.at[index-1, 'WITHIN NETWORK FINDINGS']
             
         for paper, age in age_papers:
-            if row['WITHIN NETWORK FINDINGS'] == paper:
+            if singleTable.at[index, 'WITHIN NETWORK FINDINGS'] == paper:
                 singleTable.at[index, 'AGE'] = age
                 
-        if not np.isnan(row['AGE']):
-            results_ages.append((row['RESULT'], float(row['AGE'])))
+        if not np.isnan(singleTable.at[index, 'AGE']):
+            results_ages.append((row['RESULT'], float(singleTable.at[index, 'AGE'])))
     
     #used for double checking outputs
     #display(singleTable)
@@ -1024,4 +1027,5 @@ def resultsByAge(datalist, ageFrame, age_quartiles, age_percentiles):
     display(df_ptotals)
     
     return df_totals
+        
         
