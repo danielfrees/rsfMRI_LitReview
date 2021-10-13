@@ -1,4 +1,3 @@
-
 import pandas as pd  #used throughout
 import re  #for numAuthors function, to match author names
 
@@ -1028,4 +1027,323 @@ def resultsByAge(datalist, ageFrame, age_quartiles, age_percentiles):
     
     return df_totals
         
+
+def averageVolumes(vol):
+    return_val = vol
+    if isinstance(vol, str) and vol.strip() == 'unfound':
+        return_val = 'unfound'
+    elif isinstance(vol, str):
+        vols_range = vol.strip().split('-')
+        vols_range = list(map(float, vols_range))
+        return_val =  np.mean(vols_range)
+    return return_val
+
+#investigate results by methods!
+#NOTE: if eye stats aren't reported as 'open', 'closed', 'fixated', or 'unfound' they won't be recorded by this function
+#NOTE: if regressions aren't reported as 'yes', 'no', 'unfound' they won't be recorded
+def resultsByMethod(datalist):
+    
+    #combine all data into one table for simpler iteration
+    singleTableList = []
+    for i in range(len(datalist)):
+        singleTableList.append( datalist[i] )
+    
+    singleTable = pd.concat(singleTableList)
+    singleTable.reset_index(drop = True, inplace = True)
+    
+    #cleaning
+    for index, row in singleTable.iterrows():
+        #strip methods and results cells
+        singleTable.at[index, 'RESULT'] = row['RESULT'].strip()
+        singleTable.at[index, 'Eyes Open/Closed/Fixated'] = row['Eyes Open/Closed/Fixated'].strip()
+        singleTable.at[index, 'Preprocessing Software'] = row['Preprocessing Software'].strip()
+        singleTable.at[index, 'Global signal regression'] = row['Global signal regression'].strip()
+        singleTable.at[index, 'Motion regression'] = row['Motion regression'].strip()
+        singleTable.at[index, 'White matter regression'] = row['White matter regression'].strip()
+        singleTable.at[index, 'CSF regression'] = row['CSF regression'].strip()
+        
+        #fill method info from previous line
+        if row['Eyes Open/Closed/Fixated'] == "" and index - 1 >= 0:
+            singleTable.at[index, 'Eyes Open/Closed/Fixated'] = singleTable.at[index-1, 'Eyes Open/Closed/Fixated']
+        if row['# of volumes'] == "" and index - 1 >= 0:
+            singleTable.at[index, '# of volumes'] = singleTable.at[index-1, '# of volumes']
+        if row['Preprocessing Software'] == "" and index - 1 >= 0:
+            singleTable.at[index, 'Preprocessing Software'] = singleTable.at[index-1, 'Preprocessing Software']
+        if row['Global signal regression'] == "" and index - 1 >= 0:
+            singleTable.at[index, 'Global signal regression'] = singleTable.at[index-1, 'Global signal regression']
+        if row['Motion regression'] == "" and index - 1 >= 0:
+            singleTable.at[index, 'Motion regression'] = singleTable.at[index-1, 'Motion regression']
+        if row['White matter regression'] == "" and index - 1 >= 0:
+            singleTable.at[index, 'White matter regression'] = singleTable.at[index-1, 'White matter regression']
+        if row['CSF regression'] == "" and index - 1 >= 0:
+            singleTable.at[index, 'CSF regression'] = singleTable.at[index-1, 'CSF regression']
+    
+    #can't do this if there are empty strings so wait until fill
+    singleTable['# of volumes'] = singleTable['# of volumes'].map(averageVolumes)
+    
+   #for debugggin: display(singleTable[singleTable['# of volumes'] == 'unfound'])
+    #display(singleTable['# of volumes'])
+    
+    
+    #set up data collection for methods
+    
+    #eyes
+    eye_stats = [['open', 0, 0, 0], ['closed', 0, 0, 0], ['fixated', 0, 0, 0], ['unfound', 0, 0, 0]]
+    
+    #number of volumes
+    vol_stats = [['<200', 0, 0, 0], ['[200-300)', 0, 0, 0], ['[300-400)', 0, 0, 0], ['[400-500)', 0, 0, 0], ['[500+', 0, 0, 0], ['unfound', 0, 0, 0]]
+    
+    #preprocessing
+    prep_stats = [['Mixed (Includes Custom or Generic MATLAB)', 0, 0, 0], ['AFNI', 0, 0, 0], ['FSL', 0, 0, 0],  ['SPM12', 0, 0, 0], ['DPARSF', 0, 0, 0], ['SPM8', 0, 0, 0], ['CONN', 0, 0, 0], ['FMRIB', 0, 0, 0], ['SPM5', 0, 0, 0], ['RSL', 0, 0, 0], ['unfound', 0, 0, 0]]
+    
+    #global regression
+    greg_stats = [['yes', 0, 0, 0], ['no', 0, 0, 0], ['unfound', 0, 0, 0]]
+    
+    #motion regression
+    mreg_stats = [['yes', 0, 0, 0], ['no', 0, 0, 0], ['unfound', 0, 0, 0]]
+    
+    #white matter regression
+    wreg_stats = [['yes', 0, 0, 0], ['no', 0, 0, 0], ['unfound', 0, 0, 0]]
+    
+    #CSF regression
+    csfreg_stats = [['yes', 0, 0, 0], ['no', 0, 0, 0], ['unfound', 0, 0, 0]]
+        
+    #counting
+    for index, row in singleTable.iterrows():
+        result = row['RESULT']
+        
+        #count up volume stats
+        vol_label = ''
+        
+        if row['# of volumes'] == 'unfound':
+            vol_label = 'unfound'
+        elif float(row['# of volumes']) < 200.0:
+            vol_label = '<200'
+        elif float(row['# of volumes']) >= 200.0 and float(row['# of volumes']) < 300.0:
+            vol_label = '[200-300)'
+        elif float(row['# of volumes']) >= 300.0 and float(row['# of volumes']) < 400.0:
+            vol_label = '[300-400)'
+        elif float(row['# of volumes']) >= 400.0 and float(row['# of volumes']) < 500.0:
+            vol_label = '[400-500)'
+        elif float(row['# of volumes']) >= 500.0:
+            vol_label = '[500+'
+        
+            
+        for volStat in vol_stats:
+            if volStat[0] == vol_label: 
+                if result == 'inc':
+                    volStat[1] += 1
+                if result == 'dec':
+                    volStat[2] += 1
+                if result == 'null':
+                    volStat[3] += 1
+                    
+        #count up prep stats
+        found_prep = False
+        for prepStat in prep_stats:
+            if prepStat[0] == str(row['Preprocessing Software']):
+                found_prep = True
+                if result == 'inc':
+                    prepStat[1] += 1
+                if result == 'dec':
+                    prepStat[2] += 1
+                if result == 'null':
+                    prepStat[3] += 1
+        if found_prep == False:
+            if result == 'inc':
+                prep_stats[0][1] += 1
+            if result == 'dec':
+                prep_stats[0][2] += 1
+            if result == 'null':
+                prep_stats[0][3] += 1
+        
+        #count up eye stats
+            
+        for eyeStat in eye_stats:
+            if eyeStat[0] == str(row['Eyes Open/Closed/Fixated']):
+                if result == 'inc':
+                    eyeStat[1] += 1
+                if result == 'dec':
+                    eyeStat[2] += 1
+                if result == 'null':
+                    eyeStat[3] += 1
+                    
+        #global reg stats
+        for gregStat in greg_stats:
+            if gregStat[0] == str(row['Global signal regression']):
+                if result == 'inc':
+                    gregStat[1] += 1
+                if result == 'dec':
+                    gregStat[2] += 1
+                if result == 'null':
+                    gregStat[3] += 1
+        #motion reg stats
+        for mregStat in mreg_stats:
+            if mregStat[0] == str(row['Motion regression']):
+                if result == 'inc':
+                    mregStat[1] += 1
+                if result == 'dec':
+                    mregStat[2] += 1
+                if result == 'null':
+                    mregStat[3] += 1
+                        
+        #white matter reg stats
+        for wregStat in wreg_stats:
+            if wregStat[0] == str(row['White matter regression']):
+                if result == 'inc':
+                    wregStat[1] += 1
+                if result == 'dec':
+                    wregStat[2] += 1
+                if result == 'null':
+                    wregStat[3] += 1
+                        
+        #csf reg stats
+        for csfregStat in csfreg_stats:
+            if csfregStat[0] == str(row['CSF regression']):
+                if result == 'inc':
+                    csfregStat[1] += 1
+                if result == 'dec':
+                    csfregStat[2] += 1
+                if result == 'null':
+                    csfregStat[3] += 1
+                    
+    #MAKE ALL THE DATAFRAMES
+
+    #eye
+    eye_totals = {'Increase': [eyeStat[1] for eyeStat in eye_stats], 
+            'Decrease': [eyeStat[2] for eyeStat in eye_stats], 
+            'Null': [eyeStat[3] for eyeStat in eye_stats]}        
+    df_eyetotals = pd.DataFrame(eye_totals, index = [eyeStat[0] for eyeStat in eye_stats])
+    print("Eye Method Breakdown:")
+    display(df_eyetotals)
+    print('\n')
+    
+    #volumes
+    vol_totals = {'Increase': [volStat[1] for volStat in vol_stats], 
+            'Decrease': [volStat[2] for volStat in vol_stats], 
+            'Null': [volStat[3] for volStat in vol_stats]}        
+    df_voltotals = pd.DataFrame(vol_totals, index = [volStat[0] for volStat in vol_stats])
+    print("# of Volumes Breakdown:")
+    display(df_voltotals)
+    print('\n')
+    
+    #preprocessing software
+    prep_totals = {'Increase': [prepStat[1] for prepStat in prep_stats], 
+            'Decrease': [prepStat[2] for prepStat in prep_stats], 
+            'Null': [prepStat[3] for prepStat in prep_stats]}        
+    df_preptotals = pd.DataFrame(prep_totals, index = [prepStat[0] for prepStat in prep_stats])
+    print("Preprocessing Software Breakdown:")
+    display(df_preptotals)
+    print('\n')
+    
+    #global reg
+    greg_totals = {'Increase': [gregStat[1] for gregStat in greg_stats], 
+            'Decrease': [gregStat[2] for gregStat in greg_stats], 
+            'Null': [gregStat[3] for gregStat in greg_stats]}        
+    df_gregtotals = pd.DataFrame(greg_totals, index = [gregStat[0] for gregStat in greg_stats])
+    print("Global Regression Breakdown:")
+    display(df_gregtotals)
+    print('\n')
+    
+    #motion reg
+    mreg_totals = {'Increase': [mregStat[1] for mregStat in mreg_stats], 
+            'Decrease': [mregStat[2] for mregStat in mreg_stats], 
+            'Null': [mregStat[3] for mregStat in mreg_stats]}        
+    df_mregtotals = pd.DataFrame(mreg_totals, index = [mregStat[0] for mregStat in mreg_stats])
+    print("Motion Regression Breakdown:")
+    display(df_mregtotals)
+    print('\n')
+    
+    #white matter reg
+    wreg_totals = {'Increase': [wregStat[1] for wregStat in wreg_stats], 
+            'Decrease': [wregStat[2] for wregStat in wreg_stats], 
+            'Null': [wregStat[3] for wregStat in wreg_stats]}        
+    df_wregtotals = pd.DataFrame(wreg_totals, index = [wregStat[0] for wregStat in wreg_stats])
+    print("White Matter Regression Breakdown:")
+    display(df_wregtotals)
+    print('\n')
+    
+    #csf reg
+    csfreg_totals = {'Increase': [csfregStat[1] for csfregStat in csfreg_stats], 
+            'Decrease': [csfregStat[2] for csfregStat in csfreg_stats], 
+            'Null': [csfregStat[3] for csfregStat in csfreg_stats]}        
+    df_csfregtotals = pd.DataFrame(csfreg_totals, index = [csfregStat[0] for csfregStat in csfreg_stats])
+    print("CSF Regression Breakdown:")
+    display(df_csfregtotals)
+    print('\n')
+    
+    
+    #MAKE DURATION DATAFRAME-------- tried some fancy sh- (ahem) stuff here from my Data Science class
+    data_single = pd.concat(datalist)
+    data_single = data_single.loc[:, ['RESULT', 'WITHIN NETWORK FINDINGS', 'Duration of scan (s)']]
+    #replace whitespace with nan so i can forward fill (ffill)
+    data_single = data_single.replace(r'^\s*$', np.NaN, regex=True)
+    data_single['WITHIN NETWORK FINDINGS'] = data_single['WITHIN NETWORK FINDINGS'].ffill()
+    data_single['Duration of scan (s)'] = data_single['Duration of scan (s)'].ffill()
+    
+    #grab unfound stuff to deal with separately
+    data_unfound = data_single[data_single['Duration of scan (s)'] == "unfound"]
+    
+    data_single = data_single[data_single['Duration of scan (s)'] != "unfound"]
+    data_single = data_single.astype({'Duration of scan (s)': 'int64'})
+    data_single = data_single.loc[:, ['RESULT', 'Duration of scan (s)']].sort_values(by = ['Duration of scan (s)'])
+    
+    #form a dictionary of inc, dec, null results for each scanning duration
+    res_dict = {}
+    for name, group in data_single.groupby('Duration of scan (s)'):
+        if 'inc' in group['RESULT'].values:
+            res_dict[str(name) + '_inc'] = group['RESULT'].value_counts()['inc']
+        else:
+            res_dict[str(name) + '_inc'] = 0
+        if 'dec' in group['RESULT'].values:
+            res_dict[str(name) + '_dec'] = group['RESULT'].value_counts()['dec']
+        else:
+            res_dict[str(name) + '_dec'] = 0
+        if 'null' in group['RESULT'].values:
+            res_dict[str(name) + '_null'] = group['RESULT'].value_counts()['null']
+        else: 
+            res_dict[str(name) + '_null'] = 0
+
+    #full groupby output for checking:
+    #for name, group in data_single.groupby('Duration of scan (s)'):
+        #print(name)
+        #print(group)
+        #print ('\nStatistics: ')
+        #print(group['RESULT'].value_counts())
+        #print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n')
+
+    #Passed check!!
+
+    inc_dur_list = []
+    dec_dur_list = []
+    null_dur_list = []
+
+    for key,value in res_dict.items():
+        if 'inc' in key:
+            inc_dur_list.append(value)
+        elif 'dec' in key:
+            dec_dur_list.append(value)
+        elif 'null' in key:
+            null_dur_list.append(value)
+
+    #append 'unfound' categorical results
+    inc_dur_list.append(data_unfound['RESULT'].value_counts()['inc'])
+    dec_dur_list.append(data_unfound['RESULT'].value_counts()['dec'])
+    null_dur_list.append(data_unfound['RESULT'].value_counts()['null'])
+    
+    #Make results by duration dataframe:
+    res_duration = {"Increase": inc_dur_list,
+                   'Decrease': dec_dur_list,
+                   "Null": null_dur_list}
+
+    index_dur = [name for name, group in data_single.groupby('Duration of scan (s)')]
+    index_dur.append('unfound')
+    
+    data_duration = pd.DataFrame(res_duration, index = index_dur)
+    print('Scan Duration (Seconds) Breakdown: ')
+    display(data_duration)
+    print('\n')
+    
+    return
+#end resultsByMethod() function--------------------------------------------------------------------------------
         
