@@ -1291,6 +1291,7 @@ def resultsByMethod(datalist):
     #form a dictionary of inc, dec, null results for each scanning duration
     res_dict = {}
     for name, group in data_single.groupby('Duration of scan (s)'):
+        #display(group)
         if 'inc' in group['RESULT'].values:
             res_dict[str(name) + '_inc'] = group['RESULT'].value_counts()['inc']
         else:
@@ -1346,4 +1347,149 @@ def resultsByMethod(datalist):
     
     return
 #end resultsByMethod() function--------------------------------------------------------------------------------
+
+
+#investigate results by methods using quartiles where applicable!
+def resultsByMethodQuartiles(datalist):
+    
+    #combine all data into one table for simpler iteration
+    singleTableList = []
+    for i in range(len(datalist)):
+        singleTableList.append( datalist[i] )
+    
+    singleTable = pd.concat(singleTableList)
+    singleTable.reset_index(drop = True, inplace = True)
+    
+    #cleaning
+    for index, row in singleTable.iterrows():
+        #strip methods and results cells
+        singleTable.at[index, 'RESULT'] = row['RESULT'].strip()
         
+        #fill method info from previous line
+        if row['# of volumes'] == "" and index - 1 >= 0:
+            singleTable.at[index, '# of volumes'] = singleTable.at[index-1, '# of volumes']
+    
+    #can't do this if there are empty strings so wait until fill
+    singleTable['# of volumes'] = singleTable['# of volumes'].map(averageVolumes)
+    
+    #data collection
+    #set up with quartiles
+    
+    vols = singleTable['# of volumes'].tolist()
+    valueToBeRemoved = 'unfound'
+
+    filt = filter(lambda val: val !=  valueToBeRemoved, vols) 
+    vols = list(filt)
+    
+    #unhash to check all the volumes in the data
+    #print(vols)
+    
+    quartile_1 = np.percentile(vols, 25)
+    quartile_2 = np.percentile(vols, 50)
+    quartile_3 = np.percentile(vols, 75)
+    
+    #number of volumes
+    vol_stats = [[f"Quartile 1: 0-{quartile_1}]", 0, 0, 0], [f"Quartile 2: {quartile_1}-{quartile_2}]", 0, 0, 0], [f"Quartile 3: {quartile_2}-{quartile_3}]", 0, 0, 0], [f"Quartile 4: {quartile_3}+", 0, 0, 0], ['unfound', 0, 0, 0]]
+        
+    #counting
+    for index, row in singleTable.iterrows():
+        result = row['RESULT']
+        
+        #count up volume stats
+        vol_label = ''
+        
+        if row['# of volumes'] == 'unfound':
+            vol_label = 'unfound'
+        elif float(row['# of volumes']) <= quartile_1:
+            vol_label = f"Quartile 1: 0-{quartile_1}]"
+        elif float(row['# of volumes']) > quartile_1 and float(row['# of volumes']) < quartile_2:
+            vol_label = f"Quartile 2: {quartile_1}-{quartile_2}]"
+        elif float(row['# of volumes']) > quartile_2 and float(row['# of volumes']) <= quartile_3:
+            vol_label = f"Quartile 3: {quartile_2}-{quartile_3}]"
+        elif float(row['# of volumes']) > quartile_3:
+            vol_label = f"Quartile 4: {quartile_3}+"
+        
+            
+        for volStat in vol_stats:
+            if volStat[0] == vol_label: 
+                if result == 'inc':
+                    volStat[1] += 1
+                if result == 'dec':
+                    volStat[2] += 1
+                if result == 'null':
+                    volStat[3] += 1
+                    
+    #MAKE DATAFRAMME
+    #volumes
+    vol_totals = {'Increase': [volStat[1] for volStat in vol_stats], 
+            'Decrease': [volStat[2] for volStat in vol_stats], 
+            'Null': [volStat[3] for volStat in vol_stats]}        
+    df_voltotals = pd.DataFrame(vol_totals, index = [volStat[0] for volStat in vol_stats])
+    print("# of Volumes Breakdown (Quartiles):")
+    display(df_voltotals)
+    print('\n')
+    
+    
+    #MAKE DURATION DATAFRAME-------- tried some fancy groupby sh- (ahem) stuff here from my Data Science class
+    data_single = pd.concat(datalist)
+    data_single = data_single.loc[:, ['RESULT', 'WITHIN NETWORK FINDINGS', 'Duration of scan (s)']]
+    #replace whitespace with nan so i can forward fill (ffill)
+    data_single = data_single.replace(r'^\s*$', np.NaN, regex=True)
+    data_single['WITHIN NETWORK FINDINGS'] = data_single['WITHIN NETWORK FINDINGS'].ffill()
+    data_single['Duration of scan (s)'] = data_single['Duration of scan (s)'].ffill()
+    
+    #grab unfound stuff to deal with separately
+    #data_unfound = data_single[data_single['Duration of scan (s)'] == "unfound"]
+    data_single_num = data_single[data_single['Duration of scan (s)'] != "unfound"]
+    data_single_num = data_single_num.astype({'Duration of scan (s)': 'int64'})
+    data_single_num = data_single_num.loc[:, ['RESULT', 'Duration of scan (s)']].sort_values(by = ['Duration of scan (s)'])
+    
+    durations = data_single_num['Duration of scan (s)'].tolist()
+    quartile_1 = np.percentile(durations, 25)
+    quartile_2 = np.percentile(durations, 50)
+    quartile_3 = np.percentile(durations, 75)
+    
+    #duration stat counting
+    dur_stats = [[f"Quartile 1: 0-{quartile_1}]", 0, 0, 0], [f"Quartile 2: {quartile_1}-{quartile_2}]", 0, 0, 0], [f"Quartile 3: {quartile_2}-{quartile_3}]", 0, 0, 0], [f"Quartile 4: {quartile_3}+", 0, 0, 0], ['unfound', 0, 0, 0]]
+    
+    #counting
+    for index, row in data_single.iterrows():
+        result = row['RESULT']
+        
+        #count up duration stats
+        dur_label = ''
+        
+        if row['Duration of scan (s)'] == 'unfound':
+            dur_label = 'unfound'
+        elif float(row['Duration of scan (s)']) <= quartile_1:
+            dur_label = f"Quartile 1: 0-{quartile_1}]"
+        elif float(row['Duration of scan (s)']) > quartile_1 and float(row['Duration of scan (s)']) < quartile_2:
+            dur_label = f"Quartile 2: {quartile_1}-{quartile_2}]"
+        elif float(row['Duration of scan (s)']) > quartile_2 and float(row['Duration of scan (s)']) <= quartile_3:
+            dur_label = f"Quartile 3: {quartile_2}-{quartile_3}]"
+        elif float(row['Duration of scan (s)']) > quartile_3:
+            dur_label = f"Quartile 4: {quartile_3}+"
+        
+            
+        for durStat in dur_stats:
+            if durStat[0] == dur_label: 
+                if result == 'inc':
+                    durStat[1] += 1
+                if result == 'dec':
+                    durStat[2] += 1
+                if result == 'null':
+                    durStat[3] += 1
+                    
+    #MAKE DATAFRAMME
+    dur_totals = {'Increase': [durStat[1] for durStat in dur_stats], 
+            'Decrease': [durStat[2] for durStat in dur_stats], 
+            'Null': [durStat[3] for durStat in dur_stats]}        
+    df_durtotals = pd.DataFrame(dur_totals, index = [durStat[0] for durStat in dur_stats])
+    print("Scan Duration (s) Breakdown (Quartiles):")
+    display(df_durtotals)
+    print('\n')
+    
+    
+    
+    return
+#end resultsByMethodQuartiles() function--------------------------------------------------------------------------------
