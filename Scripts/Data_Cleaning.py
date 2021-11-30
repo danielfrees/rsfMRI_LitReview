@@ -297,8 +297,21 @@ def smallTable(datalist, ageFrame):
     #smallTable['Average TBI Age'] = smallTable['Average TBI Age'].astype('str')
     
     #smallTable['Average TBI Age'] = smallTable['Average TBI Age'].map(tbi_age_cleaner)
+    
+    smallTable.sort_values(axis=0, by=['Study'], inplace=True)
+    smallTable.reset_index(drop=True, inplace=True)
                                  
     smallTable.index += 1
+    
+    #MANUAL(CHANGE IF ABOVE CODE CHANGED)
+    #A couple manual fixes for weird entries we had (we had paper B in many cases as a remnant where the other paper of same
+    #title was already removed from the study)
+    smallTable.loc[22, 'Study'] = smallTable.loc[22, 'Study'].replace(' B', '')
+    smallTable.loc[28, 'Study'] = smallTable.loc[28, 'Study'].replace(' B', '')
+    smallTable.loc[38, 'Study'] = smallTable.loc[38, 'Study'].replace(' B', '')
+    smallTable.loc[42, 'Study'] = smallTable.loc[42, 'Study'].replace(' B', '')
+    smallTable.loc[49, 'Study'] = smallTable.loc[49, 'Study'].replace(' B', '')
+    
     return smallTable
 
 
