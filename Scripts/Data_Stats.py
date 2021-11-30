@@ -888,7 +888,7 @@ def numAuthors(data):
         #get only the other name portion
         
         alpha_only = re.compile('[A-zÀ-ú\s]*')
-        author = alpha_only.match( row['WITHIN NETWORK FINDINGS'] )
+        author = alpha_only.match( row['Study'] )
         
         #strip whitespace off of ends, only allowed within author names (ie: van der Horn)
         authorOnly = author.group(0).strip()
@@ -907,7 +907,10 @@ def numAuthors(data):
 #end numAuthors function------------------------------------------------------------------------------------
 
 #investigate results by age
+#note that NOT ALL STUDIES reported age so this won't add up to the totals expected!
 def resultsByAge(datalist, ageFrame, age_quartiles, age_percentiles):
+    print('Note that not all studies reported age, so totals will be < than expected.')
+    print('')
     
     #combine all data into one table
     singleTableList = []
@@ -966,6 +969,8 @@ def resultsByAge(datalist, ageFrame, age_quartiles, age_percentiles):
             quartile_score = 3
         elif age >= age_quartiles[2]:
             quartile_score = 4
+        else:
+            print(f'Error!{age}')
             
         #determine percentile score
         percentile_score = 0

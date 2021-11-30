@@ -1,5 +1,6 @@
 import pandas as pd
 import csv
+import re
 
 #list of words used for decrease, increase, etc. 
 decList = ["DECREASE", 'decrease', 'Decrease', 'Dec', 'dec', 'hypo', 'Hypo', 'HYPO', 'Reduce', 'reduce']
@@ -222,10 +223,11 @@ def cleanData(datalist):
 
 
 #smallTable function ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- 
-#this function takes in cleaned dataframes (some output from cleanData), and returns dataframes which #contain only info salient to the actual paper (purpose: for inclusion in certain journals in which
-#the paper may be published)
+#this function takes in cleaned dataframes (some output from cleanData), and returns dataframes which #contain only info salient to the actual paper (purpose: for inclusion in certain journals in which table of the papers may be published)
+#identifies unique paper titles, collects all relevant info that may differ across observations for this paper, cleans and outputs
+#a small pretty dataframe
 
-def smallTable(datalist):
+def smallTable(datalist, ageFrame):
     
     smallTableList = []
     papers = []
@@ -233,7 +235,7 @@ def smallTable(datalist):
     drop_indices = []
     
     for i in range(len(datalist)):
-        smallTableList.append( datalist[i].filter(["WITHIN NETWORK FINDINGS", 'TBI Class', 'Severity', 'Age', 'Chronicity', 'Control Type'], axis = 1) )
+        smallTableList.append( datalist[i].filter(["WITHIN NETWORK FINDINGS", 'TBI Class', 'Severity', 'Age', 'Chronicity', 'Control Type', 'TBI (n)', 'HC (n)'], axis = 1) )
     
     smallTable =  pd.concat(smallTableList)
     
@@ -269,8 +271,34 @@ def smallTable(datalist):
         for pchron in paper_chron:
             if row['WITHIN NETWORK FINDINGS'] == pchron[0]:
                 row['Chronicity'] = pchron[1]
-
-
+                
+    #MAKE PRETTY: 11/30/21 UPDATE
+    
+    
+    #MERGE IN AGE INFO (Future update? Not working quite right yet on manning and one other)
+    #ageFrame['WITHIN NETWORK FINDINGS'].str.strip()
+    #smallTable = smallTable.merge(ageFrame, how = 'left', left_on = 'WITHIN NETWORK FINDINGS', right_on = 'WITHIN NETWORK FINDINGS')
+    
+    smallTable.rename(columns = {'WITHIN NETWORK FINDINGS': 'Study', 'AGE': 'Average TBI Age'}, inplace=True)
+    smallTable['Study'] = smallTable['Study'].map(study_title_cleaner)
+    smallTable['TBI Class'] = smallTable['TBI Class'].map(tbi_class_cleaner)
+    smallTable['Severity'] = smallTable['Severity'].map(severity_cleaner)
+    smallTable['Age'] = smallTable['Age'].map(age_cleaner)
+    smallTable['Chronicity'] = smallTable['Chronicity'].map(chronicity_cleaner)
+    
+    smallTable.drop(axis = 1, labels = 'Control Type', inplace=True)
+    
+    smallTable['TBI (n)'] = smallTable['TBI (n)'].astype('int64')
+    smallTable['HC (n)'] = smallTable['HC (n)'].astype('int64')
+    
+    #not working yet
+    #rounding ages bc not super accurate to begin with, some studies did median some did mean, some had exact vals which seemed rounded
+    #smallTable['Average TBI Age'] = smallTable['Average TBI Age'].fillna('Not Reported')
+    #smallTable['Average TBI Age'] = smallTable['Average TBI Age'].astype('str')
+    
+    #smallTable['Average TBI Age'] = smallTable['Average TBI Age'].map(tbi_age_cleaner)
+                                 
+    smallTable.index += 1
     return smallTable
 
 
@@ -286,3 +314,71 @@ def militaryOnly(datalist):
         datalist[i].drop(drop_indices, inplace = True)
     
     return datalist
+
+
+
+
+
+#------- helper functions
+def study_title_cleaner(title):
+    
+    #deal with years which aren't encapsulated in parens
+    pattern = re.compile('\d{4}')
+    if pattern.search(title):
+        match = pattern.search(title)
+        yearStart = match.span()[0]
+        if title[yearStart-1] != '(':
+            title = title[:yearStart] + '(' + title[yearStart:yearStart + 4] + ')' + title[yearStart+4:]
+    
+    #name second paper with B instead of #2
+    title = title.replace('#2', 'B')
+    
+    #strip locations
+    strip_after = max(title.find('B'), title.find(')'))
+    title = title[:strip_after+1]
+    
+    #don't care about B's when they are before parens, usually a mistake/remnant actually
+    if title.find('B') < title.find(')'):
+        title = title.replace('B', '')
+        
+    #one particular case for Li-- this is me being lazy :P
+    title.replace('(2020b)', '(2020) B')
+            
+    return title
+
+
+def tbi_class_cleaner(tbi):
+    tbi = tbi.replace('civilian', 'Civilian')
+    tbi = tbi.replace('military', 'Military')
+    tbi = tbi.replace('sport', 'Sport')
+    return tbi
+    
+def severity_cleaner(sev):
+    sev = sev.replace('mild', 'Mild')
+    sev = sev.replace('mix severity', 'Mixed')
+    sev = sev.replace('m/mod', 'Mild/Moderate')
+    sev = sev.replace('mod/sev', 'Moderate/Severe')
+    sev = sev.replace('severe', 'Severe')
+    return sev
+
+def age_cleaner(age):
+    age = age.replace('child', 'Child')
+    age = age.replace('adult', 'Adult')
+    age = age.replace('mix age', 'Mixed')
+    age = age.replace('adolescent', 'Adolescent')
+    return age
+
+def chronicity_cleaner(chron):
+    chron = chron.replace('ac/subac', 'Acute/Subacute')
+    chron = chron.replace('chronic', 'Chronic')
+    chron = chron.replace('subac/chron', 'Subacute/Chronic')
+    chron = chron.replace('+', '&')
+    chron = chron.replace('//ERROR//', 'Not Stated')
+    chron = chron.replace('subacute', 'Subacute')
+    return chron
+
+def tbi_age_cleaner(age):
+    decimal = age.find('.')
+    if (decimal != -1):
+        age = age[:decimal]
+    return age
