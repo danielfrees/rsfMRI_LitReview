@@ -1,6 +1,6 @@
 import pandas as pd  #used throughout
 import re  #for numAuthors function, to match author names
-
+from IPython.display import display
 import numpy as np #for holding data in as numpy arrays in sampleDist function, and for checking nan in resultsByAge func
 import seaborn as sns #for sampleDist function
 from matplotlib import pyplot as plt #for sampleDist function
@@ -1407,7 +1407,7 @@ def resultsByMethodQuartiles(datalist):
             vol_label = 'unfound'
         elif float(row['# of volumes']) <= quartile_1:
             vol_label = f"Quartile 1: 0-{quartile_1}]"
-        elif float(row['# of volumes']) > quartile_1 and float(row['# of volumes']) < quartile_2:
+        elif float(row['# of volumes']) > quartile_1 and float(row['# of volumes']) <= quartile_2:
             vol_label = f"Quartile 2: {quartile_1}-{quartile_2}]"
         elif float(row['# of volumes']) > quartile_2 and float(row['# of volumes']) <= quartile_3:
             vol_label = f"Quartile 3: {quartile_2}-{quartile_3}]"
@@ -1468,7 +1468,7 @@ def resultsByMethodQuartiles(datalist):
             dur_label = 'unfound'
         elif float(row['Duration of scan (s)']) <= quartile_1:
             dur_label = f"Quartile 1: 0-{quartile_1}]"
-        elif float(row['Duration of scan (s)']) > quartile_1 and float(row['Duration of scan (s)']) < quartile_2:
+        elif float(row['Duration of scan (s)']) > quartile_1 and float(row['Duration of scan (s)']) <= quartile_2:
             dur_label = f"Quartile 2: {quartile_1}-{quartile_2}]"
         elif float(row['Duration of scan (s)']) > quartile_2 and float(row['Duration of scan (s)']) <= quartile_3:
             dur_label = f"Quartile 3: {quartile_2}-{quartile_3}]"
