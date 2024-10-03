@@ -1,0 +1,51 @@
+PAPER,Eyes Open/Closed/Fixated,Scanning parameters (TR),Duration of scan,Preprocessing Software,Global signal regression,Motion regression,White matter regression,CSF regression,Tesla ,Manufacterer,Coil Channel,Sequences Collected?,# of Slices,Slice Thickness,Voxel Size,
+Mayer (2011) University of New Mexico,unfound,2000 ms,150 volumes,AFNI,no,yes,yes,yes,3 Tesla,Siemens Trio,-,"T2 Gradient-echo, echo-planar sequence",33,4.55,3.75 x 3.75 x 4.55,single shot
+"Rajesh (2017) Iowa City, Iowa",closed,2000 ms,2 x 2.5 min,"FSL, AFNI, MATLAB, Freesurfer (structural)",no,yes,yes,yes,3 Tesla,Siemens Trio,12 channel,"T2 Gradient-echo, echo-planar sequence",35,-,3.40 x 3.40 x 4.0,
+Sharp (2011) UK?,closed,2000 ms,600 s,FSL,unfound,unfound,unfound,unfound,3 Tesla,Philips Intera,-,"T2 Gradient-echo, echo-planar sequence",31,3.25,2.5 x 2.5 x 2.5,
+"Iraji (2015) Michigan, USA",closed,2000 ms,480 s,FSL,no,no,yes,yes,3 Tesla,Siemens Verio,32 channel,"T2 Gradient-echo, echo-planar sequence",-,3.5,-,
+"van der Horn (2019) Groningen, Netherlands",closed,2000 ms,unfound,SPM12,unfound,unfound,unfound,unfound,3 Tesla,Philips Intera,32 channel,"T2 Gradient-echo, echo-planar sequence",-,-,3.5 x 3.5 x 3.5,
+"De Simoni (2016) London, UK",open,2000 ms,420 s,FSL,no,yes,yes,yes,3 Tesla,GE Med Systems,8 channel,"T2 Gradient-echo, echo-planar sequence",36,3.6,3.75 x 3.75 x 3.75,
+"Dretsch (2019), AL&GA,USA ",fixated,600 ms,2100 volumes,DPARSF (based on SPM8 and REST),no,yes,yes,yes,3 Tesla,Siemens Verio,-,"T2 Gradient-echo, echo-planar sequence",-,-,3.0 x 3.0 x 5.0,
+"Militana (2016) Tennessee, USA",closed,2000 ms,600 s,SPM8,no,yes,yes,no,3 Tesla,Philips Intera,32 channel,"T2 Gradient-echo, echo-planar sequence",34,3.5,3.5 x 3.5 x 3.5,
+"van der Horn (2017) #2 Groningen, Netherlands",closed,2000 ms,600 s,SPM12,unfound,unfound,unfound,unfound,3 Tesla,Philips Intera,32 channel,"T2 Gradient-echo, echo-planar sequence",-,-,3.5 x 3.5 x 3.5,
+"Nathan (2015) Bethesda, MD USA",closed,2000 ms,360 s,"AFNI, FSL",unfound,unfound,unfound,unfound,3 Tesla,GE Med Systems,32 channel,"T2 Gradient-echo, echo-planar sequence",-,-,3.75 x 3.75 x 4.0,
+"Vakhtin (2016) Albuquerque, NM",fixated,2000 ms,334 s,Look at paper + GIFT,unfound,unfound,unfound,unfound,3 Tesla,Siemens Trio,-,"T2 Gradient-echo, echo-planar sequence",-,3.5,3.8 x 3.8 x 3.5,
+"Threlkeld (2018) Boston, MA",closed,2400 ms,432 s,CONN,no,yes,yes,yes,3 Tesla,Siemens Skyra,32 channel,"T2 Gradient-echo, echo-planar sequence",49,- ,3.4 x 3.4 x 3.5,multi-echo
+"van der Horn (2016) Groningen, Netherlands",closed,2000 ms,unfound,MATLAB (Statistical Parametric Mapping),unfound,unfound,unfound,unfound,3 Tesla,Philips Intera,32 channel,"T2 Gradient-echo, echo-planar sequence",-,- ,3.5 x 3.62 x 3.5,
+"Sours (2015) Baltimore, MD",closed,2000 ms,343 s,SPM8,no,yes,yes,yes,3 Tesla,Siemens Trio,12 channel,"T2 Gradient-echo, echo-planar sequence",36,4,-,single-shot
+"Stevens (2012) Hartford, CT",fixated,1500 ms,315 s,SPM8,unfound,unfound,unfound,unfound,3 Tesla,Siemens Allegra,-,"T2 Gradient-echo, echo-planar sequence",30,5,-,
+"Sours (2015) #2 Baltimore, MD",closed,2000 ms,342 s,AFNI,yes,yes,no,no,3 Tesla,Siemens Trio,12 channel,"T2 Gradient-echo, echo-planar sequence",36,4,-,
+"Shumskaya (2016) (Radboud, Netherlands)",open,2000 ms,800 volumes,FSL,no,yes,yes,yes,3 Tesla,Siemens Trio,32 channel,"T2 Gradient-echo, echo-planar sequence",-,-,3.5 x 3.5 x 3.0,multi-echo
+"Shumskaya (2012) Nijmegen, Netherlands",closed,1350 ms,360 s,FMRIB,unfound,unfound,unfound,unfound,3 Tesla,Siemens Trio,8 channel,"T2 Gradient-echo, echo-planar sequence",27,3.5,3.5 x 3.5 x 3.5,
+Mayer (2015),unfound,2000 ms,300 s,custom,no,yes,no,no,3 Tesla,Siemens Trio,-,"T2 Gradient-echo, echo-planar sequence",33,4.55,3.75 x 3.75 x 4.55,single-shot
+"Tang (2012), New York",unfound,2000 ms,240 s,FSL,unfound,unfound,unfound,unfound,3 Tesla,Philips Achieva,-,"T2 Gradient-echo, echo-planar sequence",38,-,-,
+"Han (2016) Texas, USA",closed,2000 ms,416 s,AFNI,yes,yes,yes,yes,3 Tesla,Philips Achieva,32 channel,"T2 Gradient-echo, echo-planar sequence",37,4,-,
+"Arenivas (2014) Dallas, TX",fixated,2000 ms,128 volumes,SPM5,yes,yes,yes,yes,3 Tesla,(2) Siemens Trio or GE,-,"T2 Gradient-echo, echo-planar sequence",36,3.5,-,single-shot
+"Dailey (2018) AZ, USA",fixated,2000 ms,300 volumes,SPM12 in MATLAB,no,no,no,no,3 Tesla,Siemens Skyra,32 channel,"T2 Gradient-echo, echo-planar sequence",32,-,2.5 x 2.5 x 2.5,
+"Palacios (2013) Barcelona, Spain",unfound,2000 ms,300 s,FSL and AFNI,unfound,unfound,unfound,unfound,3 Tesla,Siemens Trio,-,"T2 Gradient-echo, echo-planar sequence",-,-,1.7 x 1.7 x 3.0,single-shot
+"Venkatesan (2015), PN, USA",fixated,2000 ms,150-180 volumes,SPM8,no,yes,yes,yes,3 Tesla,(2) Siemens Trio or Philips,6 channel,"T2 Gradient-echo, echo-planar sequence",34 or 35,4,-,
+"Zhou (2012) New York, NY",closed,2000 ms,306 s,"FMRIB, RSL, AFNI",yes,yes,yes,yes,3 Tesla,Siemens Trio,12 channel,"T2 Gradient-echo, echo-planar sequence",-,5,-,
+"Zhang (2017) Shanghai, China",unfound,2000 ms,unfound,AFNI,no,yes,yes,yes,3 Tesla,Siemens Verio,-,"T2 Gradient-echo, echo-planar sequence",33,4,,
+"Rigon (2016) IA, USA",closed,2000 ms,360 s,FSL,yes,yes,yes,yes,3 Tesla,Siemens Trio,12 channel,"T2 Gradient-echo, echo-planar sequence",31,3.5,3.4 x 3.4 x 3.5,dual-echo fast
+"Guo (2019), China",unfound,2000 ms,360 s,MATLAB (DPARSFA 2.3 toolbox [has SPM8] amd REST V1.8]),no,yes,yes,yes,3 Tesla,Siemens Verio,8 channel,"T2 Gradient-echo, echo-planar sequence",32,3.5,-,
+"Grossner (2019), Pennsylvania, USA",fixated,2000 ms,600 s,SPM8,no,no,yes,yes,3 Tesla,Siemens Trio,-,"T2 Gradient-echo, echo-planar sequence",-,-,3.0 x 3.0 x 4.0,
+"Lancaster (2019) NJ, USA",closed,2000 ms,360 s,SPM8,no,no,yes,yes,3 Tesla,Siemens Skyra,-,"T2 Gradient-echo, echo-planar sequence",32,3,2.3 x 2.3 x 3.0,
+"Li (2020b) Nanjing, China",closed,2000 ms,486 s,D PABI(?),yes,yes,yes,yes,3 Tesla,Philips Ingenia,8 channel,"T2 Gradient-echo, echo-planar sequence",36,4,-,dual-echo fast
+"Vergara (2017) NM, USA",fixated,2000 ms,300 s,SPM,no,yes,no,no,3 Tesla,Siemens Trio,-,"T2 Gradient-echo, echo-planar sequence",33,4.55,3.75 x 3.75 x 4.55,single-shot
+"Hou (2019) Malvern, PA",closed,2000 ms,342 s,AFNI,no,yes,yes,yes,3 Tesla,Siemens Trio,12 channel,"T2 Gradient-echo, echo-planar sequence",36,4,-,
+"Orr (2016) Vermont, USA",unfound,2000 ms,600 s,"AFNI, FSL",no,yes,yes,yes,3 Tesla,Philips Achieva,-,"T2 Gradient-echo, echo-planar sequence",33,4,3.75 x 3.75 x 4.0,single-shot
+Manning (2017) ,unfound,2500 ms,600 s,FSL,no,yes,yes,yes,3 Tesla,Siemens Trio,64 channel ,"T2 Gradient-echo, echo-planar sequence",45,3,-,
+"Murdaugh (2018) AL, USA",unfound,2130 ms,192 volumes,SPM12,unfound,unfound,unfound,unfound,3 Tesla,Siemens Trio,-,"T2 Gradient-echo, echo-planar sequence",-,-,3.0 x 3.0 x 3.0,
+"Clough (2018), Victoria, AUS",closed,2500 ms,455 s,FSL,no,yes,yes,yes,3 Tesla,Siemens Prisma,-,"T2 Gradient-echo, echo-planar sequence",-,-,3.4 x 3.4 x 3.4,
+"Plourde (2020) Calgary, Canada",fixated,2000 ms,unfound,FMRIB,yes,yes,yes,yes,3 Tesla,GE Discovery,32 channel,"T2 Gradient-echo, echo-planar sequence",64,3.6,-,
+"Messé (2013) (Paris, France)",closed,2650 ms,600 s,SPM5,yes,yes,yes,n/a,3 Tesla,Siemens Trio,12 channel,"T2 Gradient-echo, echo-planar sequence",38,-,1.5 x 1.5 x 2,
+"Newsome (2013), Houson, TX",open or closed,1700 ms,unfound,AFNI,no,yes,yes,yes,3 Tesla,Philips Achieva,-,"T2 Gradient-echo, echo-planar sequence",32,3.75,-,single-shot
+"Li (2020) Nanjing, China",unfound,2000 ms,486 s,"SPM8, REST",yes,yes,yes,yes,3 Tesla,Philips Ingenia,-,"T2 Gradient-echo, echo-planar sequence",36,4,-,dual-echo fast
+"Lu (2019) Nanjing, China ",unfound,2000 ms,488 s,"SPM8, REST",unfound,unfound,unfound,unfound,3 Tesla,Philips Ingenia,8 channel ,"T2 Gradient-echo, echo-planar sequence",36,4,-,
+Slobonouv (2011),unfound,2000 ms,364 s,"SPM8, CONN",no,no,yes,yes,3 Tesla,Siemens Trio,12 channel,"T2 Gradient-echo, echo-planar sequence",-,-,3.1 x 3.1 x 5.0,dual-echo fast
+"Meier (2017) Wisconsin, USA",fixated,2000 ms,360 s,AFNI,no,yes,yes,no,3 Tesla,GE Discovery,32 channel,"T2 Gradient-echo, echo-planar sequence",37,3,2.5 x 2.5 x 3.2,dual-echo fast
+Santhanam 2019,unfound,2000 ms,360 s,FSL,unfound,unfound,unfound,unfound,3 Tesla,Philips Achieva,-,"T2 Gradient-echo, echo-planar sequence",-,4,3.75 x 3.75 x 4,
+Pagulayan 2020,fixated,2000 ms,2 x 6.5 min ,"FSL, AFNI",no,yes,no,yes,3 Tesla,Philips Achieva,32 channel,"T2 Gradient-echo, echo-planar sequence",39,4,-,single-shot
+Roy (2017),unfound,2000 ms,300 s,SPM8,no,yes,yes,yes,3 Tesla,(2) Siemens Trio or Philips Achieva ,-,"T2 Gradient-echo, echo-planar sequence",-,4,-,
+Newsome 2016,unfound,2030 ms,245 volumes,SPM8,no,yes,yes,yes,3 Tesla,Siemens Trio,12 channel,"T2 Gradient-echo, echo-planar sequence",40,3,-,
+"Newsome #2 (2016) Houston, TX",unfound,2030 ms,245 volumes,SPM8,no,yes,yes,yes,3 Tesla,Siemens Trio,32 channel,"T2 Gradient-echo, echo-planar sequence",40,3,-,
